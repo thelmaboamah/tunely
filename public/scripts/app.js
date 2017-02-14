@@ -38,14 +38,31 @@
 
 $(document).ready(function() {
   console.log('app.js loaded!');
-  renderAlbum(sampleAlbums);
+  // renderAlbum(sampleAlbums);
 
   $.ajax({
     method: "GET",
     url: "/api/albums",
-    success: renderAlbum,
+    success: onSuccess,
     error: handleError,
   });  
+
+  $('#submit-form').submit(function(e) {
+    e.preventDefault();
+
+    $.ajax({
+    method: "POST",
+    url: "/api/albums",
+    data: $(this).serialize(),
+    success: newAlbumSuccess,
+    error: handleError,
+    });
+
+    //clear form
+    $('#submit-form input, #submit-form textarea').val('');
+
+  });
+
 });
 
 
@@ -55,12 +72,16 @@ function handleError(){
 }
 
 // this function takes a single album and renders it to the page
-function renderAlbum(album) {
-  console.log('rendering album:', album);
 
-  sampleAlbums.forEach(function(sampleAlbum) {
-    console.log(sampleAlbum);
-    $("#albums").append(`<div class="row album">
+
+function onSuccess(json){
+  json.forEach(function(album){
+    renderAlbum(album);
+  })
+}
+
+function renderAlbum(album) {
+  var albumHTML = `<div class="row album">
 
   <div class="col-md-10 col-md-offset-1">
     <div class="panel panel-default">
@@ -77,17 +98,17 @@ function renderAlbum(album) {
             <ul class="list-group">
               <li class="list-group-item">
                 <h4 class='inline-header'>Album Name:</h4>
-                <span class='album-name'>${sampleAlbum.name}</span>
+                <span class='album-name'>${album.name}</span>
               </li>
 
               <li class="list-group-item">
                 <h4 class='inline-header'>Artist Name:</h4>
-                <span class='artist-name'>${sampleAlbum.artistName}</span>
+                <span class='artist-name'>${album.artistName}</span>
               </li>
 
               <li class="list-group-item">
                 <h4 class='inline-header'>Released date:</h4>
-                <span class='album-releaseDate'>${sampleAlbum.releaseDate}</span>
+                <span class='album-releaseDate'>${album.releaseDate}</span>
               </li>
             </ul>
           </div>
@@ -101,12 +122,14 @@ function renderAlbum(album) {
       </div>
     </div>
   </div>
-</div>`)
-  })
-
+</div>`;
+  $("#albums").prepend(albumHTML);
 }
 
+function newAlbumSuccess(json) {
+  renderAlbum(json);
 
+}
 
 
 
